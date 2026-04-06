@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MJS合同展示会会場スケジュール一覧（A4縦1枚）</title>
+<style>
+  :root{
+    --navy:#1e3a5f;
+    --blue:#2f6fb3;
+    --blue-soft:#eef5fc;
+    --gold:#c9932e;
+    --gold-soft:#fff8ea;
+    --green:#0f766e;
+    --green-soft:#ecfdf5;
+    --text:#223042;
+    --muted:#66758a;
+    --line:#d7e2ee;
+    --paper:#ffffff;
+  }
+
+  *{
+    box-sizing:border-box;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background:#fff;
+    color:var(--text);
+    font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+  }
+
+  body{
+    padding:0;
+  }
+
+  .sheet{
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto;
+    background:var(--paper);
+    padding:8mm;
+    display:flex;
+    flex-direction:column;
+    gap:5mm;
+  }
+
+  .hero{
+    display:grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap:4mm;
+    align-items:stretch;
+  }
+
+  .hero-main{
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:
+      radial-gradient(circle at right top, rgba(47,111,179,.14), transparent 34%),
+      linear-gradient(135deg, #ffffff 0%, #f6faff 100%);
+    padding:5mm 5mm 4.5mm;
+  }
+
+  .hero-main::after{
+    content:"";
+    position:absolute;
+    right:-24mm;
+    top:-20mm;
+    width:60mm;
+    height:60mm;
+    background:radial-gradient(circle, rgba(201,147,46,.12), transparent 60%);
+    pointer-events:none;
+  }
+
+  .eyebrow{
+    display:inline-block;
+    padding:1.2mm 2.6mm;
+    border-radius:999px;
+    background:var(--blue-soft);
+    color:var(--blue);
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.12em;
+    margin-bottom:2.2mm;
+  }
+
+  h1{
+    margin:0 0 1.8mm;
+    font-size:22px;
+    line-height:1.1;
+    letter-spacing:.03em;
+    color:var(--navy);
+  }
+
+  .lead{
+    margin:0;
+    font-size:10px;
+    color:var(--muted);
+    line-height:1.55;
+    max-width:110mm;
+  }
+
+  .hero-side{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:2.5mm;
+  }
+
+  .metric{
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#fff;
+    padding:3.6mm 4mm;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-height:20mm;
+  }
+
+  .metric-label{
+    font-size:8px;
+    color:var(--muted);
+    letter-spacing:.1em;
+    margin-bottom:1.2mm;
+  }
+
+  .metric-value{
+    font-size:17px;
+    font-weight:800;
+    color:var(--navy);
+    line-height:1;
+  }
+
+  .metric-sub{
+    margin-top:1.2mm;
+    font-size:8px;
+    color:var(--muted);
+    line-height:1.3;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:3.5mm;
+    flex:1;
+  }
+
+  .card{
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    box-shadow:0 1.2mm 3mm rgba(30,58,95,.05);
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+
+  .card-head{
+    padding:3.4mm 3.6mm 2.8mm;
+    background:linear-gradient(180deg, #f9fbff 0%, #f1f7ff 100%);
+    border-bottom:1px solid #e6eef7;
+  }
+
+  .card-head-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:2mm;
+  }
+
+  .city{
+    font-size:15px;
+    font-weight:800;
+    line-height:1.1;
+    color:var(--navy);
+    margin-bottom:1.8mm;
+  }
+
+  .date{
+    display:inline-block;
+    padding:1.1mm 2.3mm;
+    border-radius:999px;
+    background:var(--gold-soft);
+    border:1px solid #f3db9d;
+    color:#9a6900;
+    font-size:9px;
+    font-weight:700;
+    line-height:1.2;
+  }
+
+  .pack{
+    text-align:right;
+    flex:0 0 auto;
+  }
+
+  .pack-cap{
+    font-size:7px;
+    color:var(--muted);
+    letter-spacing:.09em;
+    margin-bottom:1.2mm;
+  }
+
+  .pack-qty{
+    display:inline-block;
+    padding:1.3mm 2.4mm;
+    border-radius:999px;
+    background:var(--green-soft);
+    border:1px solid #bce6da;
+    color:var(--green);
+    font-size:10px;
+    font-weight:800;
+    line-height:1;
+  }
+
+  .card-body{
+    padding:3mm 3.6mm 3.4mm;
+    display:flex;
+    flex-direction:column;
+    gap:2.2mm;
+    flex:1;
+  }
+
+  .block{
+    border-top:1px dashed #e7edf4;
+    padding-top:2mm;
+  }
+
+  .block:first-child{
+    border-top:none;
+    padding-top:0;
+  }
+
+  .block-title{
+    font-size:7px;
+    color:var(--muted);
+    letter-spacing:.14em;
+    margin-bottom:1.1mm;
+  }
+
+  .venue{
+    font-size:10.5px;
+    font-weight:800;
+    line-height:1.4;
+    color:#263649;
+  }
+
+  .address{
+    font-size:8.4px;
+    line-height:1.5;
+    color:#415164;
+  }
+
+  .postal{
+    color:var(--blue);
+    font-weight:700;
+  }
+
+  .footer{
+    margin-top:auto;
+    border-top:1px solid #e7edf4;
+    padding-top:2.2mm;
+    display:flex;
+    justify-content:space-between;
+    gap:4mm;
+    font-size:8px;
+    color:var(--muted);
+  }
+
+  @page{
+    size:A4 portrait;
+    margin:0;
+  }
+
+  @media screen and (max-width: 900px){
+    .sheet{
+      width:auto;
+      min-height:auto;
+      padding:16px;
+    }
+
+    .hero{
+      grid-template-columns:1fr;
+    }
+
+    .hero-side{
+      grid-template-columns:repeat(3, 1fr);
+    }
+
+    .grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media print{
+    body{
+      background:#fff !important;
+    }
+
+    .sheet{
+      margin:0;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <section class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">EXHIBITION VENUE LIST</div>
+        <h1>MJS合同展示会会場スケジュール一覧</h1>
+        <p class="lead">
+          各会場の開催日、発送個口数、会場情報（郵便番号・住所・建物名）を
+          A4縦1枚で見やすく整理した印刷用レイアウトです。
+        </p>
+      </div>
+      <div class="hero-side">
+        <div class="metric">
+          <div class="metric-label">会場数</div>
+          <div class="metric-value">9会場</div>
+          <div class="metric-sub">横浜〜福岡まで一覧化</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">発送個口数</div>
+          <div class="metric-value">5個口</div>
+          <div class="metric-sub">全会場共通</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">出力形式</div>
+          <div class="metric-value">A4縦</div>
+          <div class="metric-sub">1枚印刷向けに最適化</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">横浜</div>
+              <div class="date">6/11(木)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">㈱産業貿易センター</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒231-0023</span><br>神奈川県横浜市中区山下町2番地<br>産業貿易センタービル</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">札幌</div>
+              <div class="date">6/24(水)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">TKP札幌ビジネスセンター赤れんが前</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒060-0004</span><br>北海道札幌市中央区北4条西6-1<br>毎日札幌会館 5階</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">名古屋</div>
+              <div class="date">7/22(水)-23(木)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">ミロク情報サービス ソリューション中部支社</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒451-6033</span><br>愛知県名古屋市西区牛島町6-1<br>名古屋ルーセントタワー 33F</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">新宿</div>
+              <div class="date">9/3(木)-9/4(金)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">ミロク情報サービス BP・SI推進支社</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒163-0648</span><br>東京都新宿区西新宿1-25-1<br>新宿センタービル 48F</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">広島</div>
+              <div class="date">9/15(火)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">ミロク情報サービス ソリューション中国支社</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒730-0036</span><br>広島県広島市中区袋町4-25<br>明治安田広島ビル 8F</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">岡山</div>
+              <div class="date">9/16(水)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">岡山商工会議所</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒700-8556</span><br>岡山県岡山市北区厚生町3-1-15<br>岡山商工会議所</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">大阪</div>
+              <div class="date">10/20(火)-21(水)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">梅田スカイビル 貸会議室・イベントホール</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒531-6023</span><br>大阪府大阪市北区大淀中1-1-88<br>梅田スカイビル タワーイースト 23階</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">大宮</div>
+              <div class="date">11/5(木)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">ソニックシティ</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒330-8669</span><br>埼玉県さいたま市大宮区桜木町1-7-5<br>ソニックシティビル</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-head-top">
+            <div>
+              <div class="city">福岡</div>
+              <div class="date">11/17(火)</div>
+            </div>
+            <div class="pack">
+              <div class="pack-cap">PACKAGES</div>
+              <div class="pack-qty">5個口</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="block">
+            <div class="block-title">VENUE</div>
+            <div class="venue">ミロク情報サービス ソリューション九州支社</div>
+          </div>
+          <div class="block">
+            <div class="block-title">ADDRESS</div>
+            <div class="address"><span class="postal">〒812-0011</span><br>福岡県福岡市博多区博多駅前1-13-1<br>九勧承天寺通りビル 2F</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <div>白背景ベースの省インク設計</div>
+      <div>A4縦1枚印刷用レイアウト</div>
+    </footer>
+  </div>
+</body>
+</html>
